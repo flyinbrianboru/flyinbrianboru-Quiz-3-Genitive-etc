@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ga">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRS148 – Triail Ghramadaí</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --bg:      #0c0e14;
+  --s1:      #141820;
+  --s2:      #1b2030;
+  --border:  #252d3e;
+  --gold:    #d4a843;
+  --teal:    #3fbfa8;
+  --red:     #e05555;
+  --green:   #3fb87a;
+  --text:    #cdd6e8;
+  --dim:     #6e82a0;
+  --muted:   #3d4f66;
+  --tip:     #0f1e30;
+  --tipcol:  #5ba8d8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Sora', sans-serif; font-size: 15px; line-height: 1.6; }
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, #0f1420 0%, #1a2038 100%);
+  border-bottom: 2px solid var(--gold);
+  padding: 18px 22px 14px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+header h1 { font-family: 'Space Mono', monospace; font-size: 1.25rem; color: var(--gold); }
+header p  { color: var(--dim); font-size: 0.8rem; margin-top: 2px; }
+.score-badge {
+  background: var(--s2); border: 2px solid var(--gold); border-radius: 10px;
+  padding: 8px 18px; text-align: center;
+}
+.score-badge .pts { font-family: 'Space Mono', monospace; font-size: 1.6rem; color: var(--gold); font-weight: 700; }
+.score-badge .lbl { font-size: 0.72rem; color: var(--dim); }
+
+/* ── TABS ── */
+.tabs {
+  background: var(--s1); border-bottom: 1px solid var(--border);
+  display: flex; overflow-x: auto; padding: 0 14px; gap: 2px;
+}
+.tab {
+  background: none; border: none; border-bottom: 3px solid transparent;
+  color: var(--dim); cursor: pointer; font-family: 'Sora', sans-serif;
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;
+  padding: 10px 12px 8px; text-transform: uppercase; white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+.tab:hover { color: var(--text); }
+.tab.on { color: var(--gold); border-bottom-color: var(--gold); }
+
+.panel { display: none; padding: 20px 16px; max-width: 840px; margin: 0 auto; }
+.panel.on { display: block; }
+
+/* ── NOTES ── */
+.ns { background: var(--s1); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+.ns-h { background: var(--s2); border-bottom: 1px solid var(--border); color: var(--gold); font-family: 'Space Mono', monospace; font-size: 0.78rem; letter-spacing: 0.08em; padding: 9px 14px; text-transform: uppercase; }
+.ns-b { padding: 14px 16px; }
+.bi { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+.bi-ga { padding: 11px 13px; border-right: 1px solid var(--border); }
+.bi-en { padding: 11px 13px; color: var(--dim); font-style: italic; }
+.bi-lbl { color: var(--muted); font-size: 0.68rem; font-family: 'Space Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
+.nt { background: var(--tip); border-left: 3px solid var(--tipcol); border-radius: 4px; color: var(--tipcol); font-size: 0.82rem; padding: 8px 11px; margin: 8px 0; }
+.eg { font-family: 'Space Mono', monospace; font-size: 0.83rem; color: var(--dim); margin: 4px 0; }
+.eg em { color: var(--gold); font-style: normal; }
+.gt { width: 100%; border-collapse: collapse; font-size: 0.87rem; margin: 8px 0; }
+.gt th { background: var(--s2); border-bottom: 2px solid var(--border); color: var(--dim); font-family: 'Space Mono', monospace; font-size: 0.7rem; letter-spacing: 0.08em; padding: 7px 10px; text-align: left; text-transform: uppercase; }
+.gt td { border-bottom: 1px solid var(--border); padding: 7px 10px; vertical-align: top; }
+.gt tr:hover td { background: #111622; }
+.hi { color: var(--teal); font-family: 'Space Mono', monospace; font-weight: 700; }
+
+/* ── SECTION HEADER ── */
+.sec-head {
+  background: linear-gradient(90deg, var(--s2) 0%, var(--s1) 100%);
+  border: 1px solid var(--border); border-radius: 8px;
+  margin-bottom: 16px; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sec-head h2 { color: var(--gold); font-family: 'Space Mono', monospace; font-size: 0.9rem; }
+.sec-head span { color: var(--dim); font-size: 0.8rem; }
+
+/* ── QUESTION CARD ── */
+.qcard {
+  background: var(--s1); border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 18px; overflow: hidden;
+  transition: border-color .2s;
+}
+.qcard.answered-ok  { border-color: var(--green); }
+.qcard.answered-err { border-color: var(--red); }
+.qcard.answered-skip { border-color: var(--dim); }
+
+.qcard-top {
+  background: var(--s2); border-bottom: 1px solid var(--border);
+  padding: 8px 14px; display: flex; justify-content: space-between; align-items: center;
+  font-family: 'Space Mono', monospace; font-size: 0.73rem; color: var(--dim);
+}
+.qnum { color: var(--gold); font-weight: 700; }
+.qpts { color: var(--teal); }
+
+.qcard-body { padding: 18px 16px 14px; }
+.q-en { color: var(--dim); font-style: italic; font-size: 0.9rem; margin-bottom: 6px; }
+.q-ga { color: var(--text); font-size: 1.05rem; margin-bottom: 14px; font-weight: 500; }
+
+/* ── MULTIPLE CHOICE ── */
+.mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.mc-opt {
+  background: var(--s2); border: 2px solid var(--border); border-radius: 7px;
+  color: var(--text); cursor: pointer; font-family: 'Sora', sans-serif;
+  font-size: 0.83rem; padding: 9px 12px; text-align: left;
+  transition: border-color .15s, background .15s;
+}
+.mc-opt:hover:not(:disabled) { border-color: var(--gold); background: #1d2438; }
+.mc-opt.selected { border-color: var(--gold); background: #1d2030; }
+.mc-opt.correct-opt { border-color: var(--green) !important; background: #0e2018 !important; color: var(--green) !important; }
+.mc-opt.wrong-opt   { border-color: var(--red)   !important; background: #201010 !important; color: var(--red)   !important; }
+.mc-opt:disabled { cursor: default; opacity: 0.85; }
+
+/* ── TEXT INPUT ── */
+.ans-wrap { display: flex; gap: 8px; margin-bottom: 10px; }
+.ainp {
+  background: #080c12; border: 2px solid var(--border); border-radius: 7px;
+  color: var(--text); flex: 1; font-family: 'Space Mono', monospace;
+  font-size: 0.95rem; padding: 9px 12px;
+  transition: border-color .15s;
+}
+.ainp:focus { border-color: var(--teal); outline: none; }
+.ainp.ok-inp  { border-color: var(--green); background: #081510; }
+.ainp.err-inp { border-color: var(--red);   background: #150808; }
+.ainp:disabled { opacity: 0.75; }
+
+/* ── BUTTONS ── */
+.btn {
+  background: var(--s2); border: 2px solid var(--border); border-radius: 7px;
+  color: var(--text); cursor: pointer; font-family: 'Sora', sans-serif;
+  font-size: 0.85rem; font-weight: 600; padding: 8px 16px;
+  transition: border-color .15s, background .15s, color .15s;
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--teal); color: var(--teal); }
+.btn-check { background: #0a1e2e; border-color: var(--teal); color: var(--teal); font-size: 0.9rem; padding: 9px 20px; }
+.btn-check:hover { background: #112538; }
+.btn-reveal { border-color: var(--muted); color: var(--dim); font-size: 0.85rem; }
+.btn-mark { background: #1a2e10; border-color: var(--green); color: var(--green); font-size: 0.8rem; display: none; }
+
+/* ── FEEDBACK ── */
+.feedback { display: none; border-radius: 6px; margin-top: 8px; overflow: hidden; }
+.feedback.show { display: block; }
+.fb-top { padding: 8px 13px; font-weight: 600; font-size: 0.88rem; font-family: 'Space Mono', monospace; }
+.fb-ok  { background: #0e2018; color: var(--green); }
+.fb-err { background: #200e0e; color: var(--red); }
+.fb-skip { background: #1a1f2a; color: var(--dim); }
+.fb-body { background: var(--tip); border-top: 1px solid var(--border); padding: 10px 13px; }
+.fb-ans { color: var(--gold); font-family: 'Space Mono', monospace; font-size: 0.9rem; margin-bottom: 4px; }
+.fb-tip { color: var(--tipcol); font-size: 0.82rem; margin-top: 6px; }
+
+/* ── RESULT BADGE ── */
+.rb { display: inline-block; border-radius: 20px; font-size: 0.78rem; font-weight: 700; font-family: 'Space Mono', monospace; padding: 3px 10px; margin-left: 8px; }
+.rb-ok  { background: #0e2018; color: var(--green); border: 1px solid var(--green); }
+.rb-err { background: #200e0e; color: var(--red);   border: 1px solid var(--red); }
+
+/* ── SECTION SCORE ── */
+.sec-score { text-align: right; color: var(--dim); font-family: 'Space Mono', monospace; font-size: 0.8rem; margin-top: 4px; }
+.sec-score span { color: var(--gold); }
+
+@media(max-width:560px) {
+  .mc-grid { grid-template-columns: 1fr; }
+  .bi { grid-template-columns: 1fr; }
+  .bi-ga { border-right: none; border-bottom: 1px solid var(--border); }
+  .ans-wrap { flex-direction: column; }
+  .btn-check { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>IRS148 · Triail Ghramadaí</h1>
+    <p>Cuir isteach do fhreagra · Submit → fáil do mharcanna · Get your marks</p>
+  </div>
+  <div class="score-badge">
+    <div class="pts" id="total-score">0</div>
+    <div class="lbl">marcanna / marks</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab on"  onclick="showTab('notes',this)">📖 Nótaí</button>
+  <button class="tab" onclick="showTab('sec-a',this)">A · Parsáil</button>
+  <button class="tab" onclick="showTab('sec-b',this)">B · Aistriúchán</button>
+  <button class="tab" onclick="showTab('sec-c',this)">C · Aidiacht</button>
+  <button class="tab" onclick="showTab('sec-d',this)">D · Uimhreacha</button>
+  <button class="tab" onclick="showTab('sec-e',this)">E · Ainm Briathartha</button>
+  <button class="tab" onclick="showTab('sec-f',this)">F · Léamhthuiscint</button>
+</nav>
+
+<!-- ═══════════════ NOTES ═══════════════ -->
+<div id="notes" class="panel on">
+
+  <div class="ns">
+    <div class="ns-h">A · Parsáil · Identifying Noun Cases</div>
+    <div class="ns-b">
+      <div class="bi">
+        <div class="bi-ga"><div class="bi-lbl">Gaeilge</div>Is é parsáil ná aithint an tuisil ina bhfuil ainmfhocal nó frása ainmfhocail i gcomhthéacs abairt. Tá sé de ghá cur i gcás na cúigeanna tuisal: ainmneach, cuspóireach, ginideach, tabharthach, gairmeach.</div>
+        <div class="bi-en"><div class="bi-lbl">English</div>Parsing means identifying what grammatical case a noun or noun phrase is in within a sentence. The five cases are: nominative, accusative, genitive, dative, vocative.</div>
+      </div>
+      <table class="gt">
+        <thead><tr><th>Tuiseal · Case</th><th>Feidhm · Function</th><th>Sampla · Example</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">Ainmneach</td><td>Nominative — subject of sentence</td><td>Tháinig <em>an múinteoir</em>.</td></tr>
+          <tr><td class="hi">Cuspóireach</td><td>Accusative — direct object</td><td>Chonaic mé <em>an múinteoir</em>.</td></tr>
+          <tr><td class="hi">Ginideach</td><td>Genitive — possession / of</td><td>leabhar <em>an mhúinteora</em></td></tr>
+          <tr><td class="hi">Tabharthach</td><td>Dative — after simple prepositions</td><td>leis <em>an múinteoir</em></td></tr>
+          <tr><td class="hi">Gairmeach</td><td>Vocative — direct address</td><td>a <em>mhúinteoir</em>!</td></tr>
+        </tbody>
+      </table>
+      <div class="nt"><strong>Uimhir:</strong> Tá uatha agus iolra ag gach tuiseal. GA: uatha = singular, iolra = plural.<br><strong>Number:</strong> Each case has singular (uatha) and plural (iolra) forms.</div>
+    </div>
+  </div>
+
+  <div class="ns">
+    <div class="ns-h">B · Aistriúchán · Translation Key Points</div>
+    <div class="ns-b">
+      <div class="bi">
+        <div class="bi-ga"><div class="bi-lbl">Gaeilge</div>San aistriúchán caithfear aire a thabhairt do: an t-ord focal (VSO sa Ghaeilge), urú/séimhiú tar éis réamhfhocal agus alt, agus an Tuiseal Ginideach i ndiaidh ainmfhocal.</div>
+        <div class="bi-en"><div class="bi-lbl">English</div>In translation: word order is VSO in Irish (Verb–Subject–Object), mutations (lenition/eclipsis) occur after prepositions and the article, and the genitive follows nouns of possession.</div>
+      </div>
+      <table class="gt">
+        <thead><tr><th>Riail · Rule</th><th>Sampla</th><th>Béarla</th></tr></thead>
+        <tbody>
+          <tr><td>go + urú (subordinate)</td><td>Sílim <em class="hi">go dtiocfaidh</em> siad</td><td>I think they will come</td></tr>
+          <tr><td>go + urú (neg. subordinate)</td><td>Sílim <em class="hi">nach mbíonn</em> faill</td><td>I think there isn't time</td></tr>
+          <tr><td>ón (ó + an) + séimhiú</td><td>ón <em class="hi">tábla</em></td><td>from the table</td></tr>
+          <tr><td>san (i + an) + séimhiú</td><td>san <em class="hi">ospidéal</em></td><td>in the hospital</td></tr>
+          <tr><td>a + Tuiseal Gairmeach</td><td>a <em class="hi">Chiaráin</em></td><td>Ciarán! (address)</td></tr>
+          <tr><td>go dtí an + noun</td><td>go dtí an <em class="hi">chóisir</em></td><td>to the party</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="ns">
+    <div class="ns-h">C · Úsáid na hAidiachta · Adjective Agreement</div>
+    <div class="ns-b">
+      <div class="bi">
+        <div class="bi-ga"><div class="bi-lbl">Gaeilge</div>Aontaíonn an aidiacht le hinscne agus uimhir an ainmfhocail. I ndiaidh ainmfhocal iolra, cuirtear séimhiú ar thús na haidiachta (de ghnáth). I ndiaidh ainmfhocal baininscneach uatha, séimhítear an aidiacht freisin.</div>
+        <div class="bi-en"><div class="bi-lbl">English</div>Adjectives agree with the gender and number of their noun. After plural nouns, adjectives are usually lenited. After feminine singular nouns, adjectives are also lenited.</div>
+      </div>
+      <div class="eg">Masc. sg: <em>an buachaill mór</em> · Fem. sg: <em>an bhean <strong>m</strong>hór</em> · Plural: <em>na buachaillí <strong>m</strong>óra</em></div>
+      <div class="nt">Comparáid: <em>níos + aidiacht (comp.)</em> — níos lú (smaller), níos mó (bigger), níos salaí (dirtier). Superl: is + comp.: <em>is lú, is mó</em>.</div>
+    </div>
+  </div>
+
+  <div class="ns">
+    <div class="ns-h">D · Uimhreacha · Numbers with Nouns</div>
+    <div class="ns-b">
+      <table class="gt">
+        <thead><tr><th>Riail · Rule</th><th>Sampla</th><th>Béarla</th></tr></thead>
+        <tbody>
+          <tr><td>2–6: séimhiú ar an ainmfhocal (uatha)</td><td>cúig <em class="hi">theach</em></td><td>five houses</td></tr>
+          <tr><td>7–10: urú ar an ainmfhocal (uatha)</td><td>ocht <em class="hi">gceacht</em></td><td>eight lessons</td></tr>
+          <tr><td>11–19: aon…dhéag / déag</td><td>aon tábla <em class="hi">dhéag</em></td><td>eleven tables</td></tr>
+          <tr><td>Daoine: beirt, triúr… seisear</td><td><em class="hi">beirt</em> fhear</td><td>two men</td></tr>
+          <tr><td>Ordinal: an + ceathrú/cúigiú etc.</td><td>an <em class="hi">ceathrú</em> húll</td><td>the fourth apple</td></tr>
+          <tr><td>Compound: units + is + tens</td><td>naoi mbronntanas <em class="hi">is caoga</em></td><td>fifty-nine presents</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="ns">
+    <div class="ns-h">E · An tAinm Briathartha · Verbal Noun Constructions</div>
+    <div class="ns-b">
+      <div class="bi">
+        <div class="bi-ga"><div class="bi-lbl">Gaeilge</div>I gcomhthéacs ordaithe/iarrtha, úsáidtear an foirm: D'iarr X ar Y <em>rud a dhéanamh</em> nó D'iarr X ar Y <em>gan rud a dhéanamh</em> (diúltach).</div>
+        <div class="bi-en"><div class="bi-lbl">English</div>After commands reported: <em>D'iarr X ar Y [VN]</em> = X asked/told Y to [do]. Negative: <em>gan + VN</em> = not to [do].</div>
+      </div>
+      <table class="gt">
+        <thead><tr><th>Ordú · Command</th><th>Tuairisciú · Reported</th></tr></thead>
+        <tbody>
+          <tr><td>Tiomáin an carr!</td><td>D'iarr tú orm an carr a <em class="hi">thiomáint</em></td></tr>
+          <tr><td>Ná ceannaígí na ticéid!</td><td>D'inis tú dúinn <em class="hi">gan</em> na ticéid a cheannach</td></tr>
+          <tr><td>Ól gloine fíona!</td><td>Ba mhaith liom gloine fíona a <em class="hi">ól</em></td></tr>
+          <tr><td>Ná hoscail do bhéal!</td><td>D'iarr tú orm <em class="hi">gan</em> mo bhéal a oscailt</td></tr>
+        </tbody>
+      </table>
+      <div class="nt"><strong>Séimhiú:</strong> Cuirtear séimhiú ar an ainm briathartha i ndiaidh 'a' roimh ghuta: a <em>thiomáint</em> (tiomáint), a <em>cheannach</em> (ceannach). EN: Lenition after the particle 'a' before consonants.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION A — PARSÁIL ═══════════════ -->
+<div id="sec-a" class="panel">
+  <div class="sec-head">
+    <div><h2>A · Parsáil</h2><p style="color:var(--dim);font-size:0.8rem;margin-top:3px">Cliceáil ar an tuiseal ceart · Click the correct case</p></div>
+    <div class="sec-score">Marcanna: <span id="sc-a">0</span> / <span id="sc-a-total">0</span></div>
+  </div>
+
+  <!-- Each question: bolded word is what to parse -->
+  <div id="a-questions"></div>
+</div>
+
+<!-- ═══════════════ SECTION B — TRANSLATION ═══════════════ -->
+<div id="sec-b" class="panel">
+  <div class="sec-head">
+    <div><h2>B · Ainmfhocal sna Tuisil</h2><p style="color:var(--dim);font-size:0.8rem;margin-top:3px">Aistrigh go Gaeilge · Translate to Irish</p></div>
+    <div class="sec-score">Marcanna: <span id="sc-b">0</span> / <span id="sc-b-total">0</span></div>
+  </div>
+  <div id="b-questions"></div>
+</div>
+
+<!-- ═══════════════ SECTION C — ADJECTIVES ═══════════════ -->
+<div id="sec-c" class="panel">
+  <div class="sec-head">
+    <div><h2>C · Úsáid na hAidiachta</h2><p style="color:var(--dim);font-size:0.8rem;margin-top:3px">Cuir isteach an aidiacht cheart · Fill in the correct adjective forms</p></div>
+    <div class="sec-score">Marcanna: <span id="sc-c">0</span> / <span id="sc-c-total">0</span></div>
+  </div>
+  <div id="c-questions"></div>
+</div>
+
+<!-- ═══════════════ SECTION D — NUMBERS ═══════════════ -->
+<div id="sec-d" class="panel">
+  <div class="sec-head">
+    <div><h2>D · Uimhreacha</h2><p style="color:var(--dim);font-size:0.8rem;margin-top:3px">Scríobh an frása uimhreach · Write the number phrase in Irish</p></div>
+    <div class="sec-score">Marcanna: <span id="sc-d">0</span> / <span id="sc-d-total">0</span></div>
+  </div>
+  <div id="d-questions"></div>
+</div>
+
+<!-- ═══════════════ SECTION E — AINM BRIATHARTHA ═══════════════ -->
+<div id="sec-e" class="panel">
+  <div class="sec-head">
+    <div><h2>E · An tAinm Briathartha</h2><p style="color:var(--dim);font-size:0.8rem;margin-top:3px">Freagair na ceisteanna · Answer the questions</p></div>
+    <div class="sec-score">Marcanna: <span id="sc-e">0</span> / <span id="sc-e-total">0</span></div>
+  </div>
+  <div id="e-questions"></div>
+</div>
+
+<!-- ═══════════════ SECTION F — LÉAMHTHUISCINT ═══════════════ -->
+<div id="sec-f" class="panel">
+  <div class="sec-head">
+    <div><h2>F · Léamhthuiscint</h2><p style="color:var(--dim);font-size:0.8rem;margin-top:3px">Freagair na ceisteanna · Answer the comprehension questions</p></div>
+    <div class="sec-score">Marcanna: <span id="sc-f">0</span> / <span id="sc-f-total">0</span></div>
+  </div>
+
+  <!-- Reading passage -->
+  <div class="ns" style="margin-bottom:18px">
+    <div class="ns-h">An sliocht · The passage</div>
+    <div class="ns-b" style="font-size:0.92rem;line-height:1.75;color:var(--text)">
+      <p style="margin-bottom:10px">Is mise Seán Ó Ceallaigh. Is dlíodóir mé. Tá mé ag obair do chomhlacht dlí m'athar i mBéal Feirste. Tá mé i mo chónaí ar imeall na cathrach sin chomh maith. Níor tógadh i mBéal Feirste mé. Rugadh i mBaile Átha Cliath mé agus d'fhan mé sa chathair sin go raibh mé dhá bhliain déag d'aois. Nuair a bhí mé trí bliana déag d'aois, shocraigh ar mo thuismitheoirí bogadh go Béal Feirste mar go raibh baill teaghlaigh mo mháthar ina gcónaí ansin ag an am.</p>
+      <p style="margin-bottom:10px">Áine atá ar mo bhean chéile. Is as Doire í. Tá sí ina múinteoir scoile i scoil bheag áitiúil atá suite cúig mhíle ón teach. Bhuail mise léi deich mbliana ó shin agus bhí muid ag siúl amach le chéile ar feadh ceithre bliana sular pósadh muid.</p>
+      <p>Tá mo chroí istigh i gcathair Bhéal Feirste. Bíonn a lán ceolchoirmeacha ar siúl i lár na cathrach. Is é an deacracht atá agam anois nach mbíonn faill agam dul amach chuig ceolchoirmeacha chomh minic céanna mar go bhfuil clann óg agam. Bíonn mo thuismitheoirí sásta aire a thabhairt do na páistí in amanna ach tá siadsan ag dul anonn in aois.</p>
+    </div>
+  </div>
+
+  <div id="f-questions"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  NORMALISE — strip fada, punct, lowercase
+// ══════════════════════════════════════════════
+function norm(s) {
+  return s.toLowerCase()
+    .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
+    .replace(/ó/g,'o').replace(/ú/g,'u')
+    .replace(/[''`]/g,"'")
+    .replace(/[^a-z0-9' ]/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+
+// Check: does user answer match at least one accepted answer?
+// Strategy: normalise both, then check either exact match OR token overlap ≥ threshold
+// loose = comprehension marking (section F); otherwise grammar = strict
+function check(user, answers, loose) {
+  const u = norm(user);
+  if (!u) return false;
+  const uToks = u.split(' ').filter(Boolean);
+  for (const a of answers) {
+    const n = norm(a);
+    // Exact match (after normalisation — fadas and punctuation ignored)
+    if (u === n) return true;
+    const nToks = n.split(' ').filter(Boolean);
+    // Short answers (number phrases etc.): exact only. A missing séimhiú/urú
+    // is the whole point of the question, so it must not be tolerated.
+    if (nToks.length <= 3) continue;
+    const keyTokens = nToks.filter(t => t.length > 2);
+    if (!keyTokens.length) continue;
+    // whole-token match, not substring — 'mor' no longer matches 'mora'
+    const hits = keyTokens.filter(t => uToks.includes(t));
+    const ratio = hits.length / keyTokens.length;
+    if (loose ? ratio >= 0.7 : ratio === 1) return true;
+  }
+  return false;
+}
+
+// ══════════════════════════════════════════════
+//  SCORE STATE
+// ══════════════════════════════════════════════
+const scores = { a:0, b:0, c:0, d:0, e:0, f:0 };
+const totals = { a:0, b:0, c:0, d:0, e:0, f:0 };
+
+function addScore(sec, pts) {
+  scores[sec] += pts;
+  document.getElementById('sc-'+sec).textContent = scores[sec];
+  // Total
+  let t = 0;
+  for (const k in scores) t += scores[k];
+  document.getElementById('total-score').textContent = t;
+}
+
+function updateTotal(sec, pts) {
+  totals[sec] += pts;
+  document.getElementById('sc-'+sec+'-total').textContent = totals[sec];
+}
+
+// ══════════════════════════════════════════════
+//  BUILD MC QUESTION
+// ══════════════════════════════════════════════
+function buildMC(container, sec, qid, num, pts, enText, gaText, options, correctIdx, tip) {
+  updateTotal(sec, pts);
+  const div = document.createElement('div');
+  div.className = 'qcard';
+  div.id = 'q-'+sec+'-'+qid;
+
+  const optHTML = options.map((opt,i) =>
+    `<button class="mc-opt" id="opt-${sec}-${qid}-${i}" data-idx="${i}">${opt}</button>`
+  ).join('');
+
+  div.innerHTML = `
+    <div class="qcard-top">
+      <span class="qnum">C${num}</span>
+      <span class="qpts">${pts} marc</span>
+    </div>
+    <div class="qcard-body">
+      ${enText ? `<div class="q-en">${enText}</div>` : ''}
+      <div class="q-ga">${gaText}</div>
+      <div class="mc-grid" id="mc-${sec}-${qid}">${optHTML}</div>
+      <div class="feedback" id="fb-${sec}-${qid}">
+        <div class="fb-top" id="fb-top-${sec}-${qid}"></div>
+        <div class="fb-body" id="fb-body-${sec}-${qid}"></div>
+      </div>
+    </div>`;
+  container.appendChild(div);
+  div.querySelectorAll('.mc-opt').forEach(btn => {
+    btn.addEventListener('click', () =>
+      pickMC(sec, qid, Number(btn.dataset.idx), correctIdx, pts, tip));
+  });
+}
+
+window.pickMC = function(sec, qid, chosen, correct, pts, tip) {
+  const allOpts = document.querySelectorAll(`#mc-${sec}-${qid} .mc-opt`);
+  allOpts.forEach(b => b.disabled = true);
+
+  const ok = chosen === correct;
+  const card = document.getElementById(`q-${sec}-${qid}`);
+  const fb = document.getElementById(`fb-${sec}-${qid}`);
+  const fbt = document.getElementById(`fb-top-${sec}-${qid}`);
+  const fbb = document.getElementById(`fb-body-${sec}-${qid}`);
+
+  allOpts[correct].classList.add('correct-opt');
+  if (!ok) allOpts[chosen].classList.add('wrong-opt');
+
+  card.classList.add(ok ? 'answered-ok' : 'answered-err');
+  fbt.className = 'fb-top ' + (ok ? 'fb-ok' : 'fb-err');
+  fbt.textContent = ok ? '✓ Ceart! +' + pts + ' marc' : '✗ Mícheart';
+  fbb.innerHTML = `<div class="fb-tip">${tip}</div>`;
+  fb.classList.add('show');
+
+  if (ok) addScore(sec, pts);
+};
+
+// ══════════════════════════════════════════════
+//  BUILD TEXT QUESTION
+// ══════════════════════════════════════════════
+function buildText(container, sec, qid, num, pts, prompt, answers, displayAns, tip, placeholder) {
+  updateTotal(sec, pts);
+  const div = document.createElement('div');
+  div.className = 'qcard';
+  div.id = 'q-'+sec+'-'+qid;
+  placeholder = placeholder || 'Scríobh do fhreagra…';
+
+  div.innerHTML = `
+    <div class="qcard-top">
+      <span class="qnum">C${num}</span>
+      <span class="qpts">${pts} marc</span>
+    </div>
+    <div class="qcard-body">
+      <div class="q-ga">${prompt}</div>
+      <div class="ans-wrap">
+        <input class="ainp" id="inp-${sec}-${qid}" type="text"
+          placeholder="${placeholder}"
+          onkeydown="if(event.key==='Enter')submitText('${sec}','${qid}',${pts})"
+        />
+        <button class="btn btn-check" onclick="submitText('${sec}','${qid}',${pts})">✓ Seiceáil</button>
+        <button class="btn btn-reveal" onclick="revealText('${sec}','${qid}',${pts})">Taispeáin</button>
+      </div>
+      <button class="btn btn-mark" id="mark-${sec}-${qid}" onclick="markCorrect('${sec}','${qid}',${pts})">
+        ✓ Bhí mé ceart — Tabhair dom an marc
+      </button>
+      <div class="feedback" id="fb-${sec}-${qid}">
+        <div class="fb-top" id="fb-top-${sec}-${qid}"></div>
+        <div class="fb-body">
+          <div class="fb-ans" id="fb-ans-${sec}-${qid}"></div>
+          <div class="fb-tip" id="fb-tip-${sec}-${qid}"></div>
+        </div>
+      </div>
+    </div>`;
+
+  // Store answers on element
+  div.dataset.answers = JSON.stringify(answers);
+  div.dataset.display = displayAns;
+  div.dataset.tip = tip;
+  div.dataset.pts = pts;
+  div.dataset.scored = '0';
+  container.appendChild(div);
+}
+
+window.submitText = function(sec, qid, pts) {
+  const card = document.getElementById(`q-${sec}-${qid}`);
+  if (card.dataset.scored === '1') return;
+
+  const inp = document.getElementById(`inp-${sec}-${qid}`);
+  const val = inp.value.trim();
+  if (!val) return;
+
+  const answers = JSON.parse(card.dataset.answers);
+  const displayAns = card.dataset.display;
+  const tip = card.dataset.tip;
+  const ok = check(val, answers, sec === 'f');
+
+  inp.disabled = true;
+  inp.classList.add(ok ? 'ok-inp' : 'err-inp');
+  card.classList.add(ok ? 'answered-ok' : 'answered-err');
+  card.dataset.scored = '1';
+
+  const fb = document.getElementById(`fb-${sec}-${qid}`);
+  const fbt = document.getElementById(`fb-top-${sec}-${qid}`);
+  const fbA = document.getElementById(`fb-ans-${sec}-${qid}`);
+  const fbT = document.getElementById(`fb-tip-${sec}-${qid}`);
+
+  fbt.className = 'fb-top ' + (ok ? 'fb-ok' : 'fb-err');
+  fbt.textContent = ok ? `✓ Ceart! +${pts} marc` : '✗ Mícheart — féach an freagra thíos';
+  fbA.textContent = 'Freagra: ' + displayAns;
+  fbT.innerHTML = tip;
+  fb.classList.add('show');
+
+  if (ok) {
+    addScore(sec, pts);
+  } else {
+    // Show "I was right" button for subjective answers
+    const markBtn = document.getElementById(`mark-${sec}-${qid}`);
+    if (markBtn) markBtn.style.display = 'inline-block';
+  }
+};
+
+window.revealText = function(sec, qid, pts) {
+  const card = document.getElementById(`q-${sec}-${qid}`);
+  if (card.dataset.scored === '1') return;
+
+  const displayAns = card.dataset.display;
+  const tip = card.dataset.tip;
+  card.dataset.scored = '1';
+
+  const inp = document.getElementById(`inp-${sec}-${qid}`);
+  inp.disabled = true;
+  card.classList.add('answered-skip');
+
+  const fb = document.getElementById(`fb-${sec}-${qid}`);
+  const fbt = document.getElementById(`fb-top-${sec}-${qid}`);
+  const fbA = document.getElementById(`fb-ans-${sec}-${qid}`);
+  const fbT = document.getElementById(`fb-tip-${sec}-${qid}`);
+
+  fbt.className = 'fb-top fb-skip';
+  fbt.textContent = 'Taispeánta — 0 marc';
+  fbA.textContent = 'Freagra: ' + displayAns;
+  fbT.innerHTML = tip;
+  fb.classList.add('show');
+};
+
+window.markCorrect = function(sec, qid, pts) {
+  const card = document.getElementById(`q-${sec}-${qid}`);
+  const fbt = document.getElementById(`fb-top-${sec}-${qid}`);
+  const markBtn = document.getElementById(`mark-${sec}-${qid}`);
+
+  // Only award once
+  if (card.dataset.extramarked) return;
+  card.dataset.extramarked = '1';
+
+  addScore(sec, pts);
+  fbt.className = 'fb-top fb-ok';
+  fbt.textContent = `✓ Marcáilte ceart! +${pts} marc`;
+  card.classList.remove('answered-err');
+  card.classList.add('answered-ok');
+  const inp = document.getElementById(`inp-${sec}-${qid}`);
+  if (inp) { inp.classList.remove('err-inp'); inp.classList.add('ok-inp'); }
+  markBtn.style.display = 'none';
+};
+
+// ══════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════
+function showTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+}
+
+// ══════════════════════════════════════════════
+//  BUILD ALL QUESTIONS
+// ══════════════════════════════════════════════
+const cases = [
+  'Tuiseal ainmneach uatha',
+  'Tuiseal cuspóireach uatha',
+  'Tuiseal ginideach uatha',
+  'Tuiseal tabharthach uatha',
+  'Tuiseal gairmeach uatha',
+  'Tuiseal ainmneach iolra',
+  'Tuiseal cuspóireach iolra',
+  'Tuiseal ginideach iolra',
+  'Tuiseal tabharthach iolra',
+  'Tuiseal gairmeach iolra',
+];
+
+// Shuffle helper
+function pick4(correct, all) {
+  const others = all.filter(x => x !== correct);
+  const sel = [correct];
+  while (sel.length < 4) {
+    const r = others[Math.floor(Math.random()*others.length)];
+    if (!sel.includes(r)) sel.push(r);
+  }
+  // Fisher-Yates
+  for (let i = sel.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [sel[i],sel[j]] = [sel[j],sel[i]];
+  }
+  return { opts: sel, idx: sel.indexOf(correct) };
+}
+
+// ── SECTION A ──
+const aQs = [
+  { en:"Which case is the underlined noun?", ga:"Ní fhaca mé an múinteoir ag deireadh <u>an lae</u>.", correct:"Tuiseal ginideach uatha", tip:"GA: 'lae' = tuiseal ginideach uatha de 'lá'. Tá sé seo sa ghinideach toisc go bhfuil sé i ndiaidh 'deireadh' (noun). EN: 'lae' is the genitive singular of 'lá' (day) — it follows 'deireadh' (end of), making it genitive." },
+  { en:"Which case is the underlined noun?", ga:"Bhí Pól ina sheasamh in aice leis <u>an tseanbhean</u>.", correct:"Tuiseal tabharthach uatha", tip:"GA: 'an tseanbhean' = tuiseal tabharthach uatha i ndiaidh réamhfhocail (leis). EN: After a simple preposition (leis = with him), the noun takes the dative. The t- on 'seanbhean → tseanbhean' is a t-prefix, not a séimhiú: feminine s-initial nouns take it after the article." },
+  { en:"Which case is the underlined noun?", ga:"Labhair an gasúr lena chara <u>sa rang</u>.", correct:"Tuiseal tabharthach uatha", tip:"GA: 'rang' = tuiseal tabharthach uatha. 'Sa' = i + an (réamhfhocal + alt), agus cuireann sé an t-ainmfhocal sa tuiseal tabharthach. EN: 'sa' (= i + an, in the) is a preposition + article, putting the following noun into the dative case." },
+  { en:"Which case is the underlined noun?", ga:"Cá raibh sibh aréir, <u>a chairde</u>?", correct:"Tuiseal gairmeach iolra", tip:"GA: 'a chairde' = tuiseal gairmeach iolra. Cuirtear 'a' roimh ainm sa tuiseal gairmeach (ag labhairt le duine go díreach). Séimhiú ar an ainmfhocal i ndiaidh 'a'. EN: Vocative plural — the 'a' particle signals direct address. 'Cairde' → 'chairde' (lenited). Used when speaking directly to someone." },
+  { en:"Which case is the underlined noun?", ga:"Ní raibh muintir <u>na háite</u> sásta leis na scoláirí.", correct:"Tuiseal ginideach uatha", tip:"GA: 'na háite' = tuiseal ginideach uatha baininscneach de 'áit'. Tá sé sa ghinideach toisc go leanann sé 'muintir' (people of). EN: Genitive singular feminine — 'háite' is the genitive of 'áit' (place). It follows 'muintir' (people of the place), triggering genitive." },
+  { en:"Which case is the underlined noun?", ga:"Chuir mé scairt ar <u>dhochtúir</u> nuair a bhí mé tinn.", correct:"Tuiseal tabharthach uatha", tip:"GA: 'dochtúir' = tuiseal tabharthach uatha i ndiaidh réamhfhocail 'ar'. Cuireann 'ar' séimhiú ar an ainmfhocal → 'dhochtúir'. EN: Dative case after preposition 'ar' (on/to). The lenition (d → dh) marks the dative here." },
+  { en:"Which case is the underlined noun?", ga:"Cheannaigh <u>na cailíní</u> na milseáin sa siopa.", correct:"Tuiseal ainmneach iolra", tip:"GA: 'na cailíní' = tuiseal ainmneach iolra — is iad ábhar (subject) na habairte. EN: Nominative plural — the girls are the subject of the verb 'cheannaigh' (bought). Subject = nominative." },
+  { en:"Which case is the underlined noun?", ga:"Bhí a lán <u>páistí</u> sa halla ar maidin.", correct:"Tuiseal ginideach iolra", tip:"GA: Tar éis 'a lán' úsáidtear an tuiseal ginideach iolra. Tá foirm an ghinidigh iolra mar a chéile leis an ainmneach anseo (páistí). EN: After 'a lán' (a lot of) the noun is genitive plural. The genitive plural of 'páiste' happens to look identical to the nominative plural — the case is still genitive." },
+  { en:"Which case is the underlined noun?", ga:"Bhí na buachaillí ag imirt <u>iománaíochta</u> sa pháirc.", correct:"Tuiseal ginideach uatha", tip:"GA: 'iománaíochta' = tuiseal ginideach uatha de 'iománaíocht'. I ndiaidh 'ag imirt' bíonn an cluiche sa tuiseal ginideach. EN: Genitive case after 'ag imirt' (playing). The game played is in the genitive: 'iománaíocht' → 'iománaíochta'." },
+];
+
+const aCont = document.getElementById('a-questions');
+aQs.forEach((q,i) => {
+  const {opts, idx} = pick4(q.correct, cases);
+  buildMC(aCont, 'a', i, i+1, 1, q.en, q.ga, opts, idx, q.tip);
+});
+
+// ── SECTION B ──
+const bQs = [
+  // Singular
+  { en:"The teacher lifted the book from the table.", answers:["Thóg an múinteoir an leabhar ón tábla"], display:"Thóg an múinteoir an leabhar ón tábla.", tip:"GA: ÓN = ó + an. Séimhiú a leanann de ghnáth, ach ní shéimhítear 'd' ná 't' i ndiaidh an ailt: ón tábla (ach ón bhord). Ord: VSO. EN: 'ón' (from the) normally lenites, but d and t are never lenited after the article — hence ón tábla, but ón bhord.", pts:2 },
+  { en:"When did you go to the party?", answers:["Cá huair a chuaigh tú go dtí an chóisir","Cén uair a chuaigh tú go dtí an chóisir"], display:"Cá huair / Cén uair a chuaigh tú go dtí an chóisir?", tip:"GA: 'Cá huair / Cén uair' = when. 'Cóisir' baininscneach, mar sin séimhiú i ndiaidh an ailt: an chóisir. EN: 'cóisir' is feminine, so it lenites after the article in the dative: go dtí an chóisir.", pts:2 },
+  { en:"'Did Áine eat my sandwich, Ciarán?'", answers:["Ar ith Áine mo cheapaire a Chiaráin"], display:"Ar ith Áine mo cheapaire, a Chiaráin?", tip:"GA: 'Ar ith…?' = ceist san aimsir chaite. 'Mo cheapaire' — séimhiú i ndiaidh 'mo'. 'A Chiaráin' — tuiseal gairmeach. EN: 'mo' lenites (ceapaire → cheapaire). Vocative: Ciarán → a Chiaráin.", pts:2 },
+  { en:"I think they will come home at the weekend.", answers:["Sílim go dtiocfaidh siad abhaile ag an deireadh seachtaine"], display:"Sílim go dtiocfaidh siad abhaile ag an deireadh seachtaine.", tip:"GA: SÍLIM GO + urú ar an bhriathar (tiocfaidh → dtiocfaidh). EN: The subordinating particle 'go' eclipses the following verb.", pts:2 },
+  { en:"I hope my mother will buy me a new coat.", answers:["Tá súil agam go gceannóidh mo mháthair cóta nua dom"], display:"Tá súil agam go gceannóidh mo mháthair cóta nua dom.", tip:"GA: TÁ SÚIL AGAM GO + urú (ceannóidh → gceannóidh). 'Mo mháthair' — séimhiú i ndiaidh 'mo'. EN: 'go' eclipses; 'mo' lenites.", pts:2 },
+  // Plural
+  { en:"Those men didn't pack the bags.", answers:["Níor phacáil na fir sin na málaí"], display:"Níor phacáil na fir sin na málaí.", tip:"GA: NÍOR + séimhiú (phacáil). 'Na fir' = ainmneach iolra; 'na málaí' = cuspóireach iolra. EN: 'Níor' (past negative) lenites. 'Fir' is the plural of 'fear'.", pts:2 },
+  { en:"The doctors will see the nurses in the hospital.", answers:["Feicfidh na dochtúirí na banaltraí san ospidéal","Feicfidh na dochtúirí na banaltraí san otharlann"], display:"Feicfidh na dochtúirí na banaltraí san ospidéal.", tip:"GA: 'San' = i + an roimh ghuta. Ní chuirtear séimhiú ar ghuta. 'Otharlann' inghlactha fosta. EN: 'san' is used before a vowel; no lenition is possible on a vowel. Both ospidéal and otharlann are accepted.", pts:2 },
+  { en:"'When do you drink milk, children?'", answers:["Cá huair a ólann sibh bainne a pháistí","Cén uair a ólann sibh bainne a pháistí"], display:"Cá huair a ólann sibh bainne, a pháistí?", tip:"GA: 'A pháistí' = tuiseal gairmeach iolra (séimhiú ar 'p'). EN: Vocative plural: páistí → a pháistí.", pts:2 },
+  { en:"She said the other women did the work.", answers:["Dúirt sí go ndearna na mná eile an obair"], display:"Dúirt sí go ndearna na mná eile an obair.", tip:"GA: DÚIRT SÍ GO + urú (rinne/dearna → ndearna). 'Na mná' = iolra neamhrialta de 'bean'. EN: Indirect speech: 'go' + eclipsis. 'Mná' is the irregular plural of 'bean'.", pts:2 },
+  { en:"I think the politicians will leave the building.", answers:["Sílim go bhfágfaidh na polaiteoirí an foirgneamh"], display:"Sílim go bhfágfaidh na polaiteoirí an foirgneamh.", tip:"GA: SÍLIM GO + urú (fágfaidh → bhfágfaidh). EN: 'go' eclipses: fágfaidh → bhfágfaidh.", pts:2 },
+];
+
+const bCont = document.getElementById('b-questions');
+bQs.forEach((q,i) => {
+  buildText(bCont, 'b', i, i+1, q.pts, `<span class="q-en">${q.en}</span>`, q.answers, q.display, q.tip, 'Aistrigh go Gaeilge…');
+});
+
+// ── SECTION C ──
+const cQs = [
+  { en:"Put the bracketed adjectives into their correct form:", ga:"Chaith Seán na liathróidí (mór) sa chluiche (tábhachtach).", answers:["Chaith Seán na liathróidí móra sa chluiche thábhachtach"], display:"Chaith Seán na liathróidí móra sa chluiche thábhachtach.", tip:"GA: 'liathróidí móra' — aidiacht iolra (mór → móra, gan séimhiú: críoch leathan). 'sa chluiche thábhachtach' — séimhiú ar an ainmfhocal agus ar an aidiacht i ndiaidh 'sa'. EN: Plural adjective takes -a (móra) with no lenition — 'liathróidí' ends in a slender vowel but 'mór' is not lenited here. After 'sa', both the masculine noun and its adjective lenite.", pts:2 },
+  { en:"Put the bracketed adjectives into their correct form:", ga:"Bhí na mná (óg) sin níos (beag) ná a gcuid cairde.", answers:["Bhí na mná óga sin níos lú ná a gcuid cairde"], display:"Bhí na mná óga sin níos lú ná a gcuid cairde.", tip:"GA: 'mná óga' — iolra (óg → óga). Ní féidir séimhiú a chur ar ghuta. Breischéim neamhrialta: beag → níos lú. EN: Plural adjective: óg → óga (vowel-initial, so no lenition possible). Irregular comparative: beag → níos lú.", pts:2 },
+  { en:"Put the bracketed adjectives into their correct form:", ga:"Níor chuala mé na scoláirí (ciúin) ag caint leis na cairde (cainteach).", answers:["Níor chuala mé na scoláirí ciúine ag caint leis na cairde cainteacha"], display:"Níor chuala mé na scoláirí ciúine ag caint leis na cairde cainteacha.", tip:"GA: Aidiachtaí iolra: ciúin → ciúine; cainteach → cainteacha. EN: Plural adjective endings: slender-final adjectives take -e (ciúine), -ach adjectives take -a (cainteacha).", pts:2 },
+  { en:"Put the bracketed adjectives into their correct form:", ga:"Bhí na bronntanais (maith) ag na buachaillí (tinn).", answers:["Bhí na bronntanais mhaithe ag na buachaillí tinne"], display:"Bhí na bronntanais mhaithe ag na buachaillí tinne.", tip:"GA: 'bronntanais mhaithe' — séimhiú toisc go gcríochnaíonn 'bronntanais' le consan caol. 'buachaillí tinne' — críoch ghuta, mar sin gan séimhiú. EN: The plural adjective is lenited after a noun ending in a slender consonant (bronntanais → mhaithe), but not after one ending in a vowel (buachaillí tinne).", pts:2 },
+  { en:"Put the bracketed adjectives into their correct form:", ga:"Is cinnte go raibh na feirmeoirí (cáiliúil) sin níos (salach) ná sin.", answers:["Is cinnte go raibh na feirmeoirí cáiliúla sin níos salaí ná sin"], display:"Is cinnte go raibh na feirmeoirí cáiliúla sin níos salaí ná sin.", tip:"GA: Aidiacht iolra: cáiliúil → cáiliúla. Breischéim: salach → níos salaí. EN: Plural of -úil adjectives is -úla. Comparative of salach is salaí.", pts:2 },
+];
+
+const cCont = document.getElementById('c-questions');
+cQs.forEach((q,i) => {
+  const prompt = `<span class="q-en">${q.en}</span><div style="margin-top:6px">${q.ga}</div>`;
+  buildText(cCont, 'c', i, i+1, q.pts, prompt, q.answers, q.display, q.tip, 'Scríobh an abairt cheart…');
+});
+
+// ── SECTION D ──
+const dQs = [
+  { en:"five houses", answers:["cúig theach"], display:"cúig theach", tip:"GA: 2–6 → séimhiú ar ainmfhocal uatha. Teach → theach. EN: Numbers 2–6 lenite the singular noun. 'teach' → 'theach'.", pts:1 },
+  { en:"eight lessons", answers:["ocht gceacht"], display:"ocht gceacht", tip:"GA: 7–10 → urú ar ainmfhocal uatha. Ceacht → gceacht. EN: Numbers 7–10 eclipse the singular noun. 'ceacht' → 'gceacht'.", pts:1 },
+  { en:"seventeen bags", answers:["seacht mála dhéag"], display:"seacht mála dhéag", tip:"GA: 11–19: uimhir + ainmfhocal uatha + déag. Uraíonn 7 an t-ainmfhocal, ach ní féidir 'm' a urú. Séimhítear 'déag' i ndiaidh guta: mála dhéag. EN: Teens are number + singular noun + déag. 7 eclipses, but 'm' cannot be eclipsed, so mála is unchanged. 'déag' lenites to 'dhéag' after a vowel-final noun.", pts:1 },
+  { en:"five friends", answers:["cúigear cairde"], display:"cúigear cairde", tip:"GA: Daoine → úsáidtear uimhreacha pearsanta (beirt, triúr, ceathrar, cúigear…). Cúigear + ginideach iolra (cairde). EN: For people, use personal numbers: cúigear (five people) + genitive plural.", pts:1 },
+  { en:"fifty-nine presents", answers:["naoi mbronntanas is caoga"], display:"naoi mbronntanas is caoga", tip:"GA: Naoi (9) + urú (mbronntanas) + is caoga (and fifty). Ord: units + is + deicheanna. EN: Compound numbers: units first, then 'is' (and), then tens. 9 eclipses the noun.", pts:1 },
+  { en:"eleven tables", answers:["aon tábla dhéag","aon bhord déag"], display:"aon tábla dhéag (nó: aon bhord déag)", tip:"GA: Aon + ainmfhocal uatha + déag. Séimhíonn 'aon' an t-ainmfhocal ach amháin d, t, s: aon bhord, ach aon tábla. Séimhítear 'déag' i ndiaidh guta: tábla dhéag, ach bord déag. EN: 'aon' lenites the noun except d, t, s — so aon bhord but aon tábla. 'déag' becomes 'dhéag' only after a vowel-final noun.", pts:1 },
+  { en:"the fourth apple", answers:["an ceathrú húll"], display:"an ceathrú húll", tip:"GA: Uimhir ordúil: an + ceathrú + ainmfhocal (h roimh ghuta). EN: Ordinal numbers: an ceathrú (the fourth) + h before a vowel-initial noun: úll → húll.", pts:1 },
+  { en:"two men", answers:["beirt fhear"], display:"beirt fhear", tip:"GA: Beirt = dhá dhuine. Beirt + ginideach iolra nó uatha: beirt fhear (séimhiú). EN: 'Beirt' (two people) + genitive: fear → fhear (lenited genitive).", pts:1 },
+  { en:"six doctors", answers:["seisear dochtúirí"], display:"seisear dochtúirí", tip:"GA: Seisear (6 people) + ginideach iolra (dochtúirí). EN: Seisear (six people) + genitive plural: dochtúirí.", pts:1 },
+  { en:"seventy-seven rivers", answers:["seacht n-abhainn is seachtó"], display:"seacht n-abhainn is seachtó", tip:"GA: Seacht (7) + urú: abhainn → n-abhainn. Is seachtó = and seventy. EN: 7 eclipses: abhainn → n-abhainn. Compound: seacht n-abhainn is seachtó (77 = 7 + and + 70).", pts:1 },
+];
+
+const dCont = document.getElementById('d-questions');
+dQs.forEach((q,i) => {
+  buildText(dCont, 'd', i, i+1, q.pts, q.en, q.answers, q.display, q.tip, 'Gaeilge…');
+});
+
+// ── SECTION E ──
+const eQs = [
+  {
+    prompt:"<span class='q-en'>Tiomáin an carr! · Cad é a d'iarr mé ort a dhéanamh?</span>",
+    answers:["d iarr tu orm an carr a thiomaint","d'iarr tú orm an carr a thiomáint"],
+    display:"D'iarr tú orm an carr a thiomáint.",
+    tip:"GA: D'iarr X ar Y + ainm briathartha. Tiomáin → a thiomáint (séimhiú i ndiaidh 'a'). EN: 'D'iarr tú orm' = you asked me. VN after 'a': tiomáin → thiomáint (lenition).", pts:2
+  },
+  {
+    prompt:"<span class='q-en'>Ná ceannaígí na ticéid! · Cad é a d'inis mé daoibh a dhéanamh?</span>",
+    answers:["d inis tu duinn gan na ticeid a cheannach","d'inis tú dúinn gan na ticéid a cheannach"],
+    display:"D'inis tú dúinn gan na ticéid a cheannach.",
+    tip:"GA: Ordú diúltach → 'gan' + ainm briathartha. D'inis tú dúinn GAN na ticéid a cheannach. EN: Negative command reported with 'gan' (without/not to): gan + VN.", pts:2
+  },
+  {
+    prompt:"<span class='q-en'>Ól gloine fíona! · Cad é ba mhaith leat a dhéanamh?</span>",
+    answers:["ba mhaith liom gloine fiona a ol","ba mhaith liom gloine fíona a ól"],
+    display:"Ba mhaith liom gloine fíona a ól.",
+    tip:"GA: Ba mhaith liom + ainm briathartha. Ól → a ól (gan séimhiú roimh ghuta). EN: 'Ba mhaith liom' = I would like. VN: 'a ól' — no lenition before vowel-initial VN.", pts:2
+  },
+  {
+    prompt:"<span class='q-en'>Ná hoscail do bhéal! · Cad é a d'iarr mé ort a dhéanamh?</span>",
+    answers:["d iarr tu orm gan mo bheal a oscailt","d'iarr tú orm gan mo bhéal a oscailt"],
+    display:"D'iarr tú orm gan mo bhéal a oscailt.",
+    tip:"GA: Ordú diúltach → 'gan' + ainm briathartha. 'Mo bhéal' — séimhiú i ndiaidh mo. Oscail → oscailt (VN). EN: Negative: gan + VN. 'Mo' causes lenition: béal → bhéal.", pts:2
+  },
+  {
+    prompt:"<span class='q-en'>Fanaigí in aice leis an teach! · Cad é a d'inis mé daoibh a dhéanamh?</span>",
+    answers:["d inis tu duinn fanacht in aice leis an teach","d'inis tú dúinn fanacht in aice leis an teach"],
+    display:"D'inis tú dúinn fanacht in aice leis an teach.",
+    tip:"GA: D'inis tú dúinn + ainm briathartha. Fan → fanacht (VN Uladh). Ordú dearfach → gan 'gan'. EN: Affirmative command: no 'gan'. VN of 'fan' in Ulster Irish is 'fanacht'.", pts:2
+  },
+];
+
+const eCont = document.getElementById('e-questions');
+eQs.forEach((q,i) => {
+  buildText(eCont, 'e', i, i+1, q.pts, '', q.answers, q.display, q.tip, 'Scríobh an freagra…');
+  // Override the prompt
+  document.querySelector(`#q-e-${i} .qcard-body`).querySelector('.q-ga').innerHTML = q.prompt;
+});
+
+// ── SECTION F ──
+const fQs = [
+  { q:"Cá háit go díreach a bhfuil Seán ag obair?", answers:["comhlacht dli a athar i mbeal feirste","ag obair do chomhlacht dli athar i mbeal feirste","do chomhlacht dli m athar i mbeal feirste"], display:"Tá sé ag obair do chomhlacht dlí a athar i mBéal Feirste.", tip:"GA: 'Comhlacht dlí m'athar' = his father's law firm. EN: The answer must include the key details: father's law firm + Belfast.", pts:2 },
+  { q:"Cad chuige ar bhog siad go Béal Feirste?", answers:["bhí baill teaghlaigh a mháthar ina gcónaí ansin","bhí baill teaghlaigh a mháthar ina gcónaí i mBéal Feirste ag an am"], display:"Bhí baill teaghlaigh a mháthar ina gcónaí ansin ag an am.", tip:"GA: Luaigh an fáth: baill teaghlaigh a mháthar. EN: The reason: his mother's family members were living there.", pts:2 },
+  { q:"Cad é mar atá ag éirí le comhlacht a athar?", answers:["ag dul o neart go neart","o neart go neart","ag dul i bhfeidhm go maith"], display:"Tá sé ag dul ó neart go neart.", tip:"GA: 'Ó neart go neart' = from strength to strength (idiom). EN: The phrase 'ó neart go neart' means going from strength to strength.", pts:2 },
+  { q:"Cén fáth a bhfuil an t-ádh ar Áine post múinteoireachta a fháil?", answers:["níl mórán folúntas ar fáil don mhúinteoireacht","níl mórán folúntas don mhúinteoireacht na laethanta seo"], display:"Níl mórán folúntas ar fáil don mhúinteoireacht na laethanta seo.", tip:"GA: 'Folúntas' = vacancy. 'Níl mórán folúntas ar fáil' = there aren't many vacancies available. EN: Few teaching vacancies are available — so she was lucky to get one.", pts:2 },
+  { q:"Ar pósadh deich mbliana ó shin iad?", answers:["nior posadh deich mbliana o shin","nior posadh","posadh se bliana o shin iad"], display:"Níor pósadh deich mbliana ó shin iad. Pósadh sé bliana ó shin iad.", tip:"GA: Bhuail sé léi deich mbliana ó shin. Bhí siad ag siúl amach ar feadh ceithre bliana — mar sin, pósadh sé bliana ó shin. EN: He met her 10 years ago, dated 4 years → married 6 years ago, not 10.", pts:2 },
+  { q:"Ainmnigh fáth amháin a bhfuil dúil ag Seán i mBéal Feirste.", answers:["atmaisfer","muintir na haite cairdiuil","ceolchoirmeacha","go bhfuil muintir na haite iontach cairdiuil"], display:"Tá atmaisféar ann / Tá muintir na háite iontach cairdiúil agus cuidiúil.", tip:"GA: Aon fháth amháin inghlactha: atmaisféar, muintir na háite, ceolchoirmeacha. EN: Any one valid reason accepted: atmosphere, friendly locals, concerts.", pts:2 },
+  { q:"Cad chuige nach mbíonn faill ar Sheán dul amach chuig ceolchoirmeacha chomh minic céanna?", answers:["clann og aige","clann og","ta clann og aige"], display:"Tá clann óg aige.", tip:"GA: 'Clann óg' = young family. Is é seo an fáth nach mbíonn faill aige. EN: He has a young family — this is why he can't go to concerts as often.", pts:2 },
+  { q:"An dtugann tuismitheoirí Sheáin aire do na páistí uaireanta?", answers:["tugann","bionn a thuismitheoiri sasta aire a thabhairt","bíonn a thuismitheoirí sásta"], display:"Tugann. Bíonn a thuismitheoirí sásta aire a thabhairt do na páistí in amanna.", tip:"GA: Is ceist sea/níl é seo. Ní mór 'tugann' a lua, agus an míniú (in amanna). EN: Yes question — 'tugann' confirms yes, then give the detail (in amanna = sometimes).", pts:2 },
+  { q:"Cad chuige nach maith leis iarraidh ar na tuismitheoirí aire a thabhairt do na páistí?", answers:["ag dul anonn in aois","dul anonn in aois","ag eirigh sean"], display:"Tá siadsan ag dul anonn in aois.", tip:"GA: 'Dul anonn in aois' = getting on in years (ageing). EN: His parents are getting on in years — he doesn't want to impose on them.", pts:2 },
+  { q:"Cad chuige ar chóir do Sheán sult a bhaint as an am seo agus na páistí óg?", answers:["i bhfaiteadh na súl beidh siad féin ag dul amach","i bhfaiteadh na súl"], display:"I bhfaiteadh na súl, beidh siad féin ag dul amach chuig ceolchoirmeacha.", tip:"GA: 'I bhfaiteadh na súl' = in the blink of an eye. Beidh na páistí féin ag dul amach go luath. EN: In the blink of an eye the children will themselves be going out — so enjoy them while they are young.", pts:2 },
+];
+
+const fCont = document.getElementById('f-questions');
+fQs.forEach((q,i) => {
+  buildText(fCont, 'f', i, i+1, q.pts, '', q.answers, q.display, q.tip, 'Do fhreagra…');
+  document.querySelector(`#q-f-${i} .q-ga`).textContent = q.q;
+});
+</script>
+</body>
+</html>
